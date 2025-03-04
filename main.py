@@ -1,15 +1,13 @@
 import keyboard
 import threading
 import time
-import pystray
-from pystray import MenuItem as item
-from PIL import Image, ImageDraw
 import os
 
 import wx
+import wx.adv
 
 # Definiere die Tastenbelegung für Deutsch zu Englisch.
-# Dieses Dictionary übersetzt Zeichen von einem deutschen zu einem englischen Tastaturlayout.
+# Dieses Dictionary übersetzt Zeichen von einem deutschen ins englische Tastaturlayout.
 GERMAN_TO_ENGLISH = {
     'z': 'y',
     'y': 'z',
@@ -71,10 +69,9 @@ class InputFrame(wx.Frame):
     """
     Ein Fenster mit einem Textfeld zur Eingabe und einer Layout-Auswahl.
     """
-    def __init__(self, parent, title, icon_image):
+    def __init__(self, parent, title):
         super().__init__(parent, title=title, size=(400, 300))
 
-        self.icon_image = icon_image
         self.layout_var = "de"  # Standardlayout ist Deutsch
 
         panel = wx.Panel(self)
@@ -116,6 +113,9 @@ class InputFrame(wx.Frame):
 
         self.Show(False) # Fenster erst anzeigen, wenn es vom Tray-Icon aufgerufen wird
 
+        # Verhindere, dass sich die Anwendung beendet, wenn das Fenster geschlossen wird
+        self.Bind(wx.EVT_CLOSE, self.on_close)
+
     def on_type_button_clicked(self, event):
         """
         Wird aufgerufen, wenn der Button zum Tippen geklickt wird.
@@ -130,44 +130,61 @@ class InputFrame(wx.Frame):
         typing_thread = TypingThread(text, layout)
         typing_thread.start()
 
-class TrayIconHandler:
+    def on_close(self, event):
+        """
+        Wird aufgerufen, wenn das Fenster geschlossen wird.
+        """
+        self.Show(False) # Fenster ausblenden
+        event.Veto() # Verhindere, dass sich das Fenster schließt
+
+class TaskBarIcon(wx.adv.TaskBarIcon):
     """
-    Verwaltet das Tray-Icon und das Hauptfenster.
+    Ein Tray-Icon mit wxPython.
     """
-    def __init__(self, icon_image, frame):
-        self.icon_image = icon_image
+    def __init__(self, frame):
         self.frame = frame
-        self.icon = None
+        wx.adv.TaskBarIcon.__init__(self)
 
-    def create_tray_icon(self):
-        """
-        Erstellt das Tray-Icon.
-        """
-        menu = (
-            item('Text tippen', self.open_input_window),
-            item('Beenden', self.exit_action)
-        )
-        self.icon = pystray.Icon("TypeText", self.icon_image, "Text tippen", menu)
+        # Setze das Icon
+        icon = wx.Icon(os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon.png"), wx.BITMAP_TYPE_PNG)
+        self.SetIcon(icon, "Text tippen")
 
-    def run_tray_icon(self):
-        """
-        Startet das Tray-Icon.
-        """
-        self.icon.run()
+        # Binde die Ereignisse
+        self.Bind(wx.adv.EVT_TASKBAR_LEFT_DOWN, self.on_left_click)
+        self.Bind(wx.adv.EVT_TASKBAR_RIGHT_DOWN, self.on_right_click) # Rechtsklick binden
+        self.Bind(wx.EVT_MENU, self.on_menu)
 
-    def open_input_window(self):
+        # Erstelle das Menü
+        self.menu = wx.Menu()
+        self.menu_text_tippen = self.menu.Append(-1, "Text tippen")
+        self.menu_beenden = self.menu.Append(-1, "Beenden")
+        self.Bind(wx.EVT_MENU, self.on_menu, self.menu_text_tippen)
+        self.Bind(wx.EVT_MENU, self.on_menu, self.menu_beenden)
+
+    def on_left_click(self, event):
         """
-        Öffnet das Eingabefenster.
+        Wird aufgerufen, wenn auf das Tray-Icon geklickt wird.
         """
         self.frame.Show()
-        self.frame.Raise() # Fenster in den Vordergrund bringen
+        self.frame.Raise()
 
-    def exit_action(self):
+    def on_right_click(self, event):
         """
-        Beendet die Anwendung.
+        Wird aufgerufen, wenn auf das Tray-Icon rechtsgeklickt wird.
         """
-        self.icon.stop()
-        wx.GetApp().ExitMainLoop()
+        self.PopupMenu(self.menu)
+
+    def on_menu(self, event):
+        """
+        Wird aufgerufen, wenn ein Menüpunkt ausgewählt wird.
+        """
+        item = event.GetId()
+        if item == self.menu_text_tippen.GetId():
+            self.frame.Show()
+            self.frame.Raise()
+        elif item == self.menu_beenden.GetId():
+            self.RemoveIcon()
+            wx.GetApp().ExitMainLoop()
 
 def create_image():
     """
@@ -176,44 +193,16 @@ def create_image():
     script_dir = os.path.dirname(os.path.abspath(__file__))  # Pfad des Skripts
     icon_path = os.path.join(script_dir, "icon.png")  # Pfad zur Icon-Datei
 
-    try:
-        image = Image.open(icon_path)
-        return image
-    except FileNotFoundError:
-        print("Icon-Datei nicht gefunden!")
-        # Erstelle ein Standardbild, falls die Datei nicht gefunden wird
-        width = 64
-        height = 64
-        color1 = (0, 255, 0)   # Grün
-        color2 = (0, 0, 0)     # Schwarz
-        image = Image.new('RGB', (width, height), color1)
-        dc = ImageDraw.Draw(image)
-        dc.rectangle(
-            (width // 2, 0, width, height // 2),
-            fill=color2)
-        dc.rectangle(
-            (0, height // 2, width // 2, height),
-            fill=color2)
-        return image
+    # Gib ein Dummy-Objekt zurück, da es nicht mehr benötigt wird
+    return None
 
 if __name__ == '__main__':
     app = wx.App()
 
-    # Erstelle das Icon
-    image = create_image()
-
     # Erstelle das Hauptfenster (aber zeige es noch nicht an)
-    frame = InputFrame(None, "Text tippen", image)
-
-    # Erstelle den TrayIconHandler
-    tray_icon_handler = TrayIconHandler(image, frame)
+    frame = InputFrame(None, "Text tippen")
 
     # Erstelle das Tray-Icon
-    tray_icon_handler.create_tray_icon()
-
-    # Starte das Tray-Icon in einem separaten Thread
-    tray_thread = threading.Thread(target=tray_icon_handler.run_tray_icon)
-    tray_thread.daemon = True
-    tray_thread.start()
+    taskBarIcon = TaskBarIcon(frame)
 
     app.MainLoop()
