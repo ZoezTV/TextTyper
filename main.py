@@ -191,16 +191,6 @@ class TaskBarIcon(wx.adv.TaskBarIcon):
             self.RemoveIcon()
             wx.GetApp().ExitMainLoop()
 
-def create_image():
-    """
-    Lädt ein Bild aus einer PNG-Datei im selben Pfad wie das Skript.
-    """
-    script_dir = os.path.dirname(os.path.abspath(__file__))  # Pfad des Skripts
-    icon_path = os.path.join(script_dir, "icon.png")  # Pfad zur Icon-Datei
-
-    # Gib ein Dummy-Objekt zurück, da es nicht mehr benötigt wird
-    return None
-
 if __name__ == '__main__':
     app = wx.App()
 
