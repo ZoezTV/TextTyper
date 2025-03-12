@@ -98,7 +98,7 @@ class InputFrame(wx.Frame):
         layout.Add(self.text_edit, proportion=1, flag=wx.EXPAND | wx.ALL, border=5)
 
         # Tippgeschwindigkeitskonfiguration
-        speed_label = wx.StaticText(panel, label="Tippsgeschwindigkeit (Sekunden pro Zeichen):")
+        speed_label = wx.StaticText(panel, label="Tippgeschwindigkeit (Sekunden pro Zeichen):")
         layout.Add(speed_label, flag=wx.LEFT | wx.TOP, border=5)
         self.speed_ctrl = wx.SpinCtrlDouble(panel, value=str(self.typing_speed), min=0.01, max=1.0, inc=0.01)
         layout.Add(self.speed_ctrl, flag=wx.EXPAND | wx.ALL, border=5)
