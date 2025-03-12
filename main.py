@@ -1,39 +1,94 @@
-import keyboard
+import os
 import threading
 import time
-import os
 
+import keyboard
 import wx
 import wx.adv
 
 
 def type_text(text, typing_speed=0.02):
-    time.sleep(1.0)  # Add a longer delay before typing (adjust as needed)
+    time.sleep(1.0)  # Füge eine längere Verzögerung vor dem Tippen hinzu (bei Bedarf anpassen)
+
+    special_chars = {
+        '!': '1',
+        '"': '2',
+        '§': '3',
+        '$': '4',
+        '%': '5',
+        '&': '6',
+        '/': '7',
+        '(': '8',
+        ')': '9',
+        '=': '0',
+        '?': 'ß',
+        '*': '+',
+        "'": '#',
+        ';': ',',
+        ':': '.',
+        '_': '-'
+    }
+
+    alt_gr_chars = {
+        '@': 'q',
+        '€': 'e',
+        '\\': 'ß',
+        '{': '7',
+        '[': '8',
+        ']': '9',
+        '}': '0',
+        '~': '+'
+    }
 
     for char in text:
-        keyboard.write(char)
-        time.sleep(typing_speed)  # Use the typing speed from the configuration
+        if char in special_chars:
+            keyboard.press('shift')
+            keyboard.press_and_release(special_chars[char])
+            keyboard.release('shift')
+        elif char in alt_gr_chars:
+            keyboard.press('alt')
+            keyboard.press_and_release(alt_gr_chars[char])
+            keyboard.release('alt')
+        elif char == '´':
+            keyboard.press_and_release('´')
+            keyboard.press_and_release('´')
+            keyboard.press_and_release('backspace')
+        elif char == '`':
+            keyboard.press('shift')
+            keyboard.press_and_release('´')
+            keyboard.release('shift')
+            keyboard.press_and_release('´')
+            keyboard.press_and_release('backspace')
+        elif char.isupper():
+            keyboard.press('shift')
+            keyboard.press_and_release(char.lower())
+            keyboard.release('shift')
+        else:
+            keyboard.press_and_release(char)
+        time.sleep(typing_speed)  # Verwende die Tippgeschwindigkeit aus der Konfiguration
+
 
 class TypingThread(threading.Thread):
     """
     Ein Thread zum Tippen des Textes, um die GUI nicht zu blockieren.
     """
     def __init__(self, text, typing_speed):
-        threading.Thread.__init__(self)
+        super().__init__()
         self.text = text
         self.typing_speed = typing_speed
 
     def run(self):
         type_text(self.text, self.typing_speed)
 
+
 class InputFrame(wx.Frame):
     """
-    Ein Fenster mit einem Textfeld zur Eingabe und einer Layout-Auswahl.
+    Ein Fenster mit einem Textfeld zur Eingabe und einer Tippgeschwindigkeitskonfiguration.
     """
     def __init__(self, parent, title):
-        super().__init__(parent, title=title, size=(400, 350))
+        super().__init__(parent, title=title, size=(450, 350))
 
-        self.typing_speed = 0.02  # Default typing speed
+        self.typing_speed = 0.03  # Standard-Tippgeschwindigkeit
 
         panel = wx.Panel(self)
         layout = wx.BoxSizer(wx.VERTICAL)
@@ -42,7 +97,7 @@ class InputFrame(wx.Frame):
         self.text_edit = wx.TextCtrl(panel, style=wx.TE_MULTILINE)
         layout.Add(self.text_edit, proportion=1, flag=wx.EXPAND | wx.ALL, border=5)
 
-        # Typing speed configuration
+        # Tippgeschwindigkeitskonfiguration
         speed_label = wx.StaticText(panel, label="Tippsgeschwindigkeit (Sekunden pro Zeichen):")
         layout.Add(speed_label, flag=wx.LEFT | wx.TOP, border=5)
         self.speed_ctrl = wx.SpinCtrlDouble(panel, value=str(self.typing_speed), min=0.01, max=1.0, inc=0.01)
@@ -53,9 +108,9 @@ class InputFrame(wx.Frame):
         layout.Add(hint_label, flag=wx.LEFT | wx.TOP, border=5)
 
         # Button zum Starten des Tippens
-        self.type_button = wx.Button(panel, label="Tippen")
-        layout.Add(self.type_button, flag=wx.EXPAND | wx.ALL, border=5)
-        self.type_button.Bind(wx.EVT_BUTTON, self.on_type_button_clicked)
+        self.start_typing_button = wx.Button(panel, label="Tippen")
+        layout.Add(self.start_typing_button, flag=wx.EXPAND | wx.ALL, border=5)
+        self.start_typing_button.Bind(wx.EVT_BUTTON, self.on_type_button_clicked)
 
         panel.SetSizer(layout)
 
@@ -75,7 +130,7 @@ class InputFrame(wx.Frame):
         Wird aufgerufen, wenn der Button zum Tippen geklickt wird.
         """
         text = self.text_edit.GetValue()
-        self.typing_speed = self.speed_ctrl.GetValue()  # Get the typing speed from the control
+        self.typing_speed = self.speed_ctrl.GetValue()  # Hole die Tippgeschwindigkeit aus der Steuerung
         typing_thread = TypingThread(text, self.typing_speed)
         typing_thread.start()
 
@@ -86,13 +141,14 @@ class InputFrame(wx.Frame):
         self.Show(False)  # Fenster ausblenden
         event.Veto()  # Verhindere, dass sich das Fenster schließt
 
+
 class TaskBarIcon(wx.adv.TaskBarIcon):
     """
     Ein Tray-Icon mit wxPython.
     """
     def __init__(self, frame):
         self.frame = frame
-        wx.adv.TaskBarIcon.__init__(self)
+        super().__init__()
 
         # Setze das Icon
         icon = wx.Icon(os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon.png"), wx.BITMAP_TYPE_PNG)
