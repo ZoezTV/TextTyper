@@ -31,7 +31,7 @@ class InputFrame(wx.Frame):
     Ein Fenster mit einem Textfeld zur Eingabe und einer Layout-Auswahl.
     """
     def __init__(self, parent, title):
-        super().__init__(parent, title=title, size=(400, 300))
+        super().__init__(parent, title=title, size=(400, 350))
 
         self.typing_speed = 0.02  # Default typing speed
 
