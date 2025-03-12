@@ -6,64 +6,25 @@ import os
 import wx
 import wx.adv
 
-# Definiere die Tastenbelegung für Deutsch zu Englisch.
-# Dieses Dictionary übersetzt Zeichen von einem deutschen ins englische Tastaturlayout.
-GERMAN_TO_ENGLISH = {
-    'z': 'y',
-    'y': 'z',
-    'ß': '[',
-    'ü': '{',
-    'ö': ';',
-    'ä': "'",
-    '#': ']',
-    '+': '}',
-    '´': '"',
-    '^': '6',
-    '°': '`',
-    '$': '4',
-    '§': '1',
-    '<': '\\',
-    '>': '|',
-    ' ': ' ',  # Leerzeichen bleibt Leerzeichen
-}
 
-def translate_char(char, layout="de"):
-    """
-    Übersetzt ein Zeichen vom deutschen ins englische Tastaturlayout, falls 'layout' auf 'en' gesetzt ist.
-    """
-    if layout == "en":
-        if char.lower() in GERMAN_TO_ENGLISH:
-            if char.isupper():
-                return GERMAN_TO_ENGLISH[char.lower()].upper()
-            else:
-                return GERMAN_TO_ENGLISH[char.lower()]
-        else:
-            # Wenn das Zeichen nicht im Dictionary gefunden wird, wird es unverändert zurückgegeben.
-            return char
-    return char
-
-def type_text(text, layout="de"):
-    """
-    Tippt den gegebenen Text unter Verwendung des angegebenen Tastaturlayouts.
-    """
+def type_text(text, typing_speed=0.02):
     time.sleep(1.0)  # Add a longer delay before typing (adjust as needed)
 
     for char in text:
-        translated_char = translate_char(char, layout)
         keyboard.write(char)
-        time.sleep(0.02)  # Füge eine kleine Verzögerung zwischen den Zeichen hinzu (anpassbar).
+        time.sleep(typing_speed)  # Use the typing speed from the configuration
 
 class TypingThread(threading.Thread):
     """
     Ein Thread zum Tippen des Textes, um die GUI nicht zu blockieren.
     """
-    def __init__(self, text, layout):
+    def __init__(self, text, typing_speed):
         threading.Thread.__init__(self)
         self.text = text
-        self.layout = layout
+        self.typing_speed = typing_speed
 
     def run(self):
-        type_text(self.text, self.layout)
+        type_text(self.text, self.typing_speed)
 
 class InputFrame(wx.Frame):
     """
@@ -72,7 +33,7 @@ class InputFrame(wx.Frame):
     def __init__(self, parent, title):
         super().__init__(parent, title=title, size=(400, 300))
 
-        self.layout_var = "de"  # Standardlayout ist Deutsch
+        self.typing_speed = 0.02  # Default typing speed
 
         panel = wx.Panel(self)
         layout = wx.BoxSizer(wx.VERTICAL)
@@ -81,18 +42,11 @@ class InputFrame(wx.Frame):
         self.text_edit = wx.TextCtrl(panel, style=wx.TE_MULTILINE)
         layout.Add(self.text_edit, proportion=1, flag=wx.EXPAND | wx.ALL, border=5)
 
-        # Label für die Layout-Auswahl
-        layout_label = wx.StaticText(panel, label="Wähle die Sprache im Zielfenster aus:")
-        layout.Add(layout_label, flag=wx.LEFT | wx.TOP, border=5)
-
-        # Radiobuttons für die Layout-Auswahl
-        radio_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.german_radio = wx.RadioButton(panel, label="Deutsch", style=wx.RB_GROUP)
-        self.english_radio = wx.RadioButton(panel, label="Englisch")
-        self.german_radio.SetValue(True)  # Standardmäßig Deutsch auswählen
-        radio_sizer.Add(self.german_radio, flag=wx.RIGHT, border=5)
-        radio_sizer.Add(self.english_radio, flag=wx.RIGHT, border=5)
-        layout.Add(radio_sizer, flag=wx.LEFT | wx.TOP, border=5)
+        # Typing speed configuration
+        speed_label = wx.StaticText(panel, label="Tippsgeschwindigkeit (Sekunden pro Zeichen):")
+        layout.Add(speed_label, flag=wx.LEFT | wx.TOP, border=5)
+        self.speed_ctrl = wx.SpinCtrlDouble(panel, value=str(self.typing_speed), min=0.01, max=1.0, inc=0.01)
+        layout.Add(self.speed_ctrl, flag=wx.EXPAND | wx.ALL, border=5)
 
         # Hinweis für den Benutzer
         hint_label = wx.StaticText(panel, label="Wechsle nach dem Klicken auf 'Tippen' sofort zum Zielanwendungsfenster!")
@@ -111,7 +65,7 @@ class InputFrame(wx.Frame):
         # Setze das Fenster auf "Always on Top"
         self.SetWindowStyle(self.GetWindowStyle() | wx.STAY_ON_TOP)
 
-        self.Show(False) # Fenster erst anzeigen, wenn es vom Tray-Icon aufgerufen wird
+        self.Show(False)  # Fenster erst anzeigen, wenn es vom Tray-Icon aufgerufen wird
 
         # Verhindere, dass sich die Anwendung beendet, wenn das Fenster geschlossen wird
         self.Bind(wx.EVT_CLOSE, self.on_close)
@@ -121,21 +75,16 @@ class InputFrame(wx.Frame):
         Wird aufgerufen, wenn der Button zum Tippen geklickt wird.
         """
         text = self.text_edit.GetValue()
-        if self.german_radio.GetValue():
-            layout = "de"
-        else:
-            layout = "en"
-
-        # Starte das Tippen in einem separaten Thread, um die GUI nicht zu blockieren
-        typing_thread = TypingThread(text, layout)
+        self.typing_speed = self.speed_ctrl.GetValue()  # Get the typing speed from the control
+        typing_thread = TypingThread(text, self.typing_speed)
         typing_thread.start()
 
     def on_close(self, event):
         """
         Wird aufgerufen, wenn das Fenster geschlossen wird.
         """
-        self.Show(False) # Fenster ausblenden
-        event.Veto() # Verhindere, dass sich das Fenster schließt
+        self.Show(False)  # Fenster ausblenden
+        event.Veto()  # Verhindere, dass sich das Fenster schließt
 
 class TaskBarIcon(wx.adv.TaskBarIcon):
     """
@@ -151,7 +100,7 @@ class TaskBarIcon(wx.adv.TaskBarIcon):
 
         # Binde die Ereignisse
         self.Bind(wx.adv.EVT_TASKBAR_LEFT_DOWN, self.on_left_click)
-        self.Bind(wx.adv.EVT_TASKBAR_RIGHT_DOWN, self.on_right_click) # Rechtsklick binden
+        self.Bind(wx.adv.EVT_TASKBAR_RIGHT_DOWN, self.on_right_click)  # Rechtsklick binden
         self.Bind(wx.EVT_MENU, self.on_menu)
 
         # Erstelle das Menü
