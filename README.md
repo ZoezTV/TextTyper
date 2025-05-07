@@ -29,7 +29,7 @@ TextTyper ist eine einfache Anwendung zur Automatisierung von Tippaufgaben. Sie 
    ```
 
 4. **Alternativ:**
-   - Eine ausführbare `.exe`-Datei, die mit PyInstaller erstellt wurde, ist als Release verfügbar. Diese kann direkt ausgeführt werden, ohne dass Python installiert sein muss.
+   - Eine ausführbare `.exe`-Datei, die mit PyInstaller erstellt wurde, ist als Release verfügbar. Diese kann direkt ausgeführt werden, ohne dass Python installiert sein muss. https://github.com/ZoezTV/TextTyper/releases
 
 ## Verwendung
 
