@@ -43,7 +43,7 @@ TextTyper ist eine einfache Anwendung zur Automatisierung von Tippaufgaben. Sie 
    - Passe die Tippgeschwindigkeit mit der bereitgestellten Steuerung an, um die Verzögerung zwischen den Tastenanschlägen festzulegen.
 
 4. **Tippen starten:**
-   - Klicke auf die Schaltfläche "Tippen" und wechseln Sie sofort zum Zielanwendungsfenster, in dem der Text getippt werden soll.
+   - Klicke auf die Schaltfläche "Tippen" und wechsel sofort zum Zielanwendungsfenster, in dem der Text getippt werden soll.
 
 ## Tastaturlayout
 
