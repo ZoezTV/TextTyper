@@ -1,12 +1,12 @@
 # TextTyper
 
-TextTyper ist eine einfache Anwendung zur Automatisierung von Tippaufgaben. Sie ermöglicht es Benutzern, Text einzugeben und automatisch in ein beliebiges Anwendungsfenster zu tippen, indem Tastatureingaben simuliert werden. Dies kann besonders nützlich für sich wiederholende Tippaufgaben oder Demonstrationen sein.
+TextTyper ist eine einfache Anwendung zur Automatisierung von Tippaufgaben. Sie ermöglicht es Benutzern, Text einzugeben und automatisch in ein beliebiges Anwendungsfenster zu tippen, indem Tastatureingaben simuliert werden.
 
 ## Funktionen
 
 - Unterstützt deutsches Tastaturlayout.
 - Konfigurierbare Tippgeschwindigkeit.
-- Handhabt Sonderzeichen und Tastenkombinationen, einschließlich Shift und AltGr.
+- Handhabt Sonderzeichen durch Shift und AltGr.
 - Läuft im Hintergrund mit einem System-Tray-Icon für einfachen Zugriff.
 
 ## Installation
@@ -34,16 +34,16 @@ TextTyper ist eine einfache Anwendung zur Automatisierung von Tippaufgaben. Sie 
 ## Verwendung
 
 1. **Anwendung öffnen:**
-   - Die Anwendung startet minimiert im System-Tray. Klicken Sie auf das Tray-Icon, um das Hauptfenster zu öffnen.
+   - Die Anwendung startet minimiert im System-Tray. Klicke auf das Tray-Icon, um das Hauptfenster zu öffnen.
 
 2. **Text eingeben:**
-   - Geben Sie den Text ein oder fügen Sie ihn in das Textfeld ein, den Sie automatisieren möchten.
+   - Gebe den Text ein oder fügen ihn in das Textfeld ein.
 
 3. **Tippgeschwindigkeit einstellen:**
-   - Passen Sie die Tippgeschwindigkeit mit der bereitgestellten Steuerung an, um die Verzögerung zwischen den Tastenanschlägen festzulegen.
+   - Passe die Tippgeschwindigkeit mit der bereitgestellten Steuerung an, um die Verzögerung zwischen den Tastenanschlägen festzulegen.
 
 4. **Tippen starten:**
-   - Klicken Sie auf die Schaltfläche "Tippen" und wechseln Sie sofort zum Zielanwendungsfenster, in dem der Text getippt werden soll.
+   - Klicke auf die Schaltfläche "Tippen" und wechseln Sie sofort zum Zielanwendungsfenster, in dem der Text getippt werden soll.
 
 ## Tastaturlayout
 
