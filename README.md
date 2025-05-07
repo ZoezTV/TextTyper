@@ -18,7 +18,7 @@ TextTyper ist eine einfache Anwendung zur Automatisierung von Tippaufgaben. Sie 
    ```
 
 2. **Erforderliche Abhängigkeiten installieren:**
-   Stellen Sie sicher, dass Python installiert ist, und führen Sie dann aus:
+   Stelle sicher, dass Python installiert ist, und führen dann folgendes aus:
    ```bash
    pip install -r requirements.txt
    ```
