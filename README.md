@@ -13,7 +13,7 @@ TextTyper ist eine einfache Anwendung zur Automatisierung von Tippaufgaben. Sie 
 
 1. **Repository klonen:**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/ZoezTV/TextTyper
    cd TextTyper
    ```
 
